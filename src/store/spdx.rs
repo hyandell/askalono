@@ -15,7 +15,7 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::io::prelude::*;
 
-use failure::Error;
+use failure::{err_msg, Error};
 use walkdir::WalkDir;
 
 use store::base::{LicenseEntry, Store};
@@ -38,18 +38,19 @@ impl Store {
 
             let name = val["licenseId"]
                 .as_str()
-                .ok_or(format_err!("missing licenseId"))?;
+                .ok_or_else(|| err_msg("missing licenseId"))?;
             let text = val["licenseText"]
                 .as_str()
-                .ok_or(format_err!("missing licenseText"))?;
+                .ok_or_else(|| err_msg("missing licenseText"))?;
             //let template = val["standardLicenseTemplate"].as_str(); // unused
             let header = val["standardLicenseHeader"].as_str();
 
             info!("Processing {}", name);
 
-            let content = match include_texts {
-                false => TextData::new(text),
-                true => TextData::new(text).without_text(),
+            let content = if include_texts {
+                TextData::new(text)
+            } else {
+                TextData::new(text).without_text()
             };
 
             let license = self.licenses
@@ -57,9 +58,10 @@ impl Store {
                 .or_insert_with(|| LicenseEntry::new(content));
 
             if let Some(header_text) = header {
-                let header_data = match include_texts {
-                    false => TextData::new(header_text),
-                    true => TextData::new(header_text).without_text(),
+                let header_data = if include_texts {
+                    TextData::new(header_text)
+                } else {
+                    TextData::new(header_text).without_text()
                 };
                 license.headers = vec![header_data];
             }

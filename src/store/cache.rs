@@ -13,7 +13,8 @@
 
 use std::io::copy;
 use std::io::prelude::*;
-use failure::Error;
+
+use failure::{err_msg, Error};
 use flate2::{Compression, GzBuilder};
 use flate2::read::GzDecoder;
 
@@ -40,9 +41,9 @@ impl Store {
         let dec = GzDecoder::new(readable);
         {
             let extra = dec.header()
-                .ok_or(format_err!("cache gzip header invalid"))?
+                .ok_or_else(|| err_msg("cache gzip header invalid"))?
                 .extra()
-                .ok_or(format_err!("cache gzip extra header missing"))?;
+                .ok_or_else(|| err_msg("cache gzip extra header missing"))?;
             if extra != CACHE_VERSION {
                 bail!("cache version mismatch");
             }

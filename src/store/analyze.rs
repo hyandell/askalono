@@ -57,14 +57,14 @@ impl Store {
             .par_iter()
             .fold(Vec::new, |mut a: Vec<Match>, (name, data)| {
                 a.push(Match {
-                    score: data.original.match_score(&text),
+                    score: data.original.match_score(text),
                     name: name.clone(),
                     license_type: LicenseType::Original,
                     data: &data.original,
                 });
                 data.alternates.iter().for_each(|alt| {
                     a.push(Match {
-                        score: alt.match_score(&text),
+                        score: alt.match_score(text),
                         name: name.clone(),
                         license_type: LicenseType::Alternate,
                         data: alt,
@@ -72,7 +72,7 @@ impl Store {
                 });
                 data.headers.iter().for_each(|head| {
                     a.push(Match {
-                        score: head.match_score(&text),
+                        score: head.match_score(text),
                         name: name.clone(),
                         license_type: LicenseType::Header,
                         data: head,
